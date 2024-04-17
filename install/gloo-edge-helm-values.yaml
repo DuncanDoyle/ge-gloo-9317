@@ -1,0 +1,35 @@
+gloo:
+  settings:
+    disableKubernetesDestinations: true
+    # writeNamespace: gloo-other
+  discovery:
+    enabled: true
+  gateway:
+    # ddoyle: enabled for debugging purposes to be able to see the Proxy CR. Has performance impact, so don't enable in production environments.
+    persistProxySpec: true
+    # Allow gateways to live in all namespaces, not just our `writeNamespace`.
+    readGatewaysFromAllNamespaces: false  
+  gatewayProxies:
+    gatewayProxy:
+      disabled: false
+      readConfig: true
+      readConfigMulticluster: true
+      gatewaySettings:
+        customHttpGateway:
+          options:
+            proxyLatency:
+              measureRequestInternally: true
+              request: LAST_INCOMING_LAST_OUTGOING
+              response: LAST_INCOMING_LAST_OUTGOING
+          # virtualServiceSelector:
+          #   gateway-type: default # label set on the VirtualService
+        # customHttpsGateway:
+        #   virtualServiceSelector:
+        #     gateway-type: default # label set on the VirtualService
+        accessLoggingService:
+          accessLog:
+          - fileSink:
+              path: /dev/stdout
+              jsonFormat:
+                DURATION: '%DURATION%'
+                proxy_latency_response_out: '%DYNAMIC_METADATA(io.solo.filters.http.proxy_latency:response_out)%'
